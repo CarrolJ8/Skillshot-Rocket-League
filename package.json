@@ -1,0 +1,28 @@
+{
+  "name": "the-other-thing",
+  "version": "1.0.0",
+  "description": "1. git clone https://github.com/jordanfcarroll/rocket-league-skillshot.git\r 2. cd ./rocket-league-skillshot\r 3. npm i\r 4. node ./relay.js",
+  "main": "graphics-relay.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "httpserver": "http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jordanfcarroll/rocket-league-skillshot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jordanfcarroll/rocket-league-skillshot/issues"
+  },
+  "homepage": "https://github.com/jordanfcarroll/rocket-league-skillshot#readme",
+  "dependencies": {
+    "http-server": "^0.12.3",
+    "ws": "^7.5.2",
+    "atob": "^2.1.2",
+    "cli-msg": "^1.0.0",
+    "minimist": "^1.2.5",
+    "prompt": "^1.1.0"
+  }
+}

@@ -1,0 +1,242 @@
+<html>
+  <head>
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      .scoreboard {
+        position: absolute;
+        top: 15px;
+        left: 30px;
+        color: black;
+        font-size: 20px;
+        font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+        background-color: white;
+      }
+      .boosttracker {
+        position: absolute;
+        bottom: 15px;
+        left: 30px;
+        color: black;
+        font-size: 20px;
+        font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+        background-color: white;
+      }
+    </style>
+  </head>
+  <body>
+  	<div class="scoreboard">
+    	<table class="team-info">
+        	<tr class="team left">
+                <th class="name" >Blue</th>
+            	<td class="score">1</th>
+            </tr>
+            <tr class="team right">
+            	<th class="name"></th>
+            	<td class="score"></td>
+        	</tr>
+    	</table>
+    </div>
+    <div class="boosttracker">
+      <table class="players">
+        <tr class="player_0">
+          <th class="player0">player1</th>
+          <td class="boost">1</td>
+        </tr>
+        <tr class="player_1">
+          <th class="player1">player2</th>
+          <td class="boost">2</td>
+        </tr>
+        <tr class="player_2">
+          <th class="player2">player3</th>
+          <td class="boost">100</td>
+        </tr>
+        <tr class="player_3">
+          <th class="player3">player4</th>
+          <td class="boost">100</td>
+        </tr>
+        <tr class="player_4">
+          <th class="player4">player5</th>
+          <td class="boost">100</td>
+        </tr>
+        <tr class="player_5">
+          <th class="player5">player6</th>
+          <td class="boost">100</td>
+        </tr>
+      </table>
+    </div>
+    <script>
+        const WsSubscribers = {
+          __subscribers: {},
+          websocket: undefined,
+          webSocketConnected: false,
+          registerQueue: [],
+          init: function (port, debug, debugFilters) {
+            port = port || 49322;
+            debug = debug || false;
+            if (debug) {
+              if (debugFilters !== undefined) {
+                console.warn(
+                  "WebSocket Debug Mode enabled with filtering. Only events not in the filter list will be dumped"
+                );
+              } else {
+                console.warn(
+                  "WebSocket Debug Mode enabled without filters applied. All events will be dumped to console"
+                );
+                console.warn(
+                  "To use filters, pass in an array of 'channel:event' strings to the second parameter of the init function"
+                );
+              }
+            }
+            WsSubscribers.webSocket = new WebSocket("ws://localhost:" + port);
+            WsSubscribers.webSocket.onmessage = function (event) {
+              let jEvent = JSON.parse(event.data);
+              if (!jEvent.hasOwnProperty("event")) {
+                return;
+              }
+              let eventSplit = jEvent.event.split(":");
+              let channel = eventSplit[0];
+              let event_event = eventSplit[1];
+              if (debug) {
+                if (!debugFilters) {
+                  console.log(channel, event_event, jEvent);
+                } else if (
+                  debugFilters &&
+                  debugFilters.indexOf(jEvent.event) < 0
+                ) {
+                  console.log(channel, event_event, jEvent);
+                }
+              }
+              WsSubscribers.triggerSubscribers(channel, event_event, jEvent.data);
+            };
+            WsSubscribers.webSocket.onopen = function () {
+              WsSubscribers.triggerSubscribers("ws", "open");
+              WsSubscribers.webSocketConnected = true;
+              WsSubscribers.registerQueue.forEach((r) => {
+                WsSubscribers.send("wsRelay", "register", r);
+              });
+              WsSubscribers.registerQueue = [];
+            };
+            WsSubscribers.webSocket.onerror = function () {
+              WsSubscribers.triggerSubscribers("ws", "error");
+              WsSubscribers.webSocketConnected = false;
+            };
+            WsSubscribers.webSocket.onclose = function () {
+              WsSubscribers.triggerSubscribers("ws", "close");
+              WsSubscribers.webSocketConnected = false;
+            };
+          },
+          subscribe: function (channels, events, callback) {
+            if (typeof channels === "string") {
+              let channel = channels;
+              channels = [];
+              channels.push(channel);
+            }
+            if (typeof events === "string") {
+              let event = events;
+              events = [];
+              events.push(event);
+            }
+            channels.forEach(function (c) {
+              events.forEach(function (e) {
+                if (!WsSubscribers.__subscribers.hasOwnProperty(c)) {
+                  WsSubscribers.__subscribers[c] = {};
+                }
+                if (!WsSubscribers.__subscribers[c].hasOwnProperty(e)) {
+                  WsSubscribers.__subscribers[c][e] = [];
+                  if (WsSubscribers.webSocketConnected) {
+                    WsSubscribers.send("wsRelay", "register", `${c}:${e}`);
+                  } else {
+                    WsSubscribers.registerQueue.push(`${c}:${e}`);
+                  }
+                }
+                WsSubscribers.__subscribers[c][e].push(callback);
+              });
+            });
+          },
+          clearEventCallbacks: function (channel, event) {
+            if (
+              WsSubscribers.__subscribers.hasOwnProperty(channel) &&
+              WsSubscribers.__subscribers[channel].hasOwnProperty(event)
+            ) {
+              WsSubscribers.__subscribers[channel] = {};
+            }
+          },
+          triggerSubscribers: function (channel, event, data) {
+            if (
+              WsSubscribers.__subscribers.hasOwnProperty(channel) &&
+              WsSubscribers.__subscribers[channel].hasOwnProperty(event)
+            ) {
+              WsSubscribers.__subscribers[channel][event].forEach(function (
+                callback
+              ) {
+                if (callback instanceof Function) {
+                  callback(data);
+                }
+              });
+            }
+          },
+          send: function (channel, event, data) {
+            if (typeof channel !== "string") {
+              console.error("Channel must be a string");
+              return;
+            }
+            if (typeof event !== "string") {
+              console.error("Event must be a string");
+              return;
+            }
+            if (channel === "local") {
+              this.triggerSubscribers(channel, event, data);
+            } else {
+              let cEvent = channel + ":" + event;
+              WsSubscribers.webSocket.send(
+                JSON.stringify({
+                  event: cEvent,
+                  data: data,
+                })
+              );
+            }
+          },
+        };
+
+        ///acquire team name and current score
+        $(() => {
+          WsSubscribers.init(49322, true);
+          WsSubscribers.subscribe("game", "update_state", (data) => {
+
+
+            ///get team names and score
+            $(".scoreboard .team.left .score").text(
+                data.game.teams[0].score
+            );
+            $(".scoreboard .team.left .name").text(data.game.teams[0].name);
+            $(".scoreboard .team.right .score").text(
+                data.game.teams[1].score
+            );
+            $(".scoreboard .team.right .name").text(
+                data.game.teams[1].name
+            );
+            ///get player names and player score
+            const players = Object.keys(data.players);
+            players.forEach((player, i) => {
+                $(`.boosttracker .player_${i} .player${i}`).text(data.players[player].name);
+                $(`.boosttracker .player_${i} .boost`).text(data.players[player].boost);
+            })
+
+
+            // json stuff
+            const jsonData = json.stringify([
+              data
+            ])
+
+
+
+
+           
+          });
+      });
+    </script>
+  </body>
+</html>
