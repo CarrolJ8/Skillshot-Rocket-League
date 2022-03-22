@@ -148,6 +148,9 @@ prompt.get([
   ///acquire team name and current score
     WsSubscribers.init(49322, true);
     WsSubscribers.subscribe("game", "update_state", (data) => {
+      if (!data[0]) {
+        return;
+      }
 
       data[0].teams = {
         "team_0": {
