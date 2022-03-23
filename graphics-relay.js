@@ -176,7 +176,11 @@ prompt.get([
         data
       ])
       console.log(jsonData);
-      fs.writeFileSync('./json-data/game.json', jsonData);
+      try {
+        fs.writeFileSync('./json-data/game.json', jsonData);
+      } catch(e) {
+        console.log('Error writing json:' + e.message)
+      }
 
       return false;
     });
