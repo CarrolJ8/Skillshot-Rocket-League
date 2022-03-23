@@ -175,9 +175,10 @@ prompt.get([
       const jsonData = JSON.stringify([
         data
       ])
-      console.log(jsonData);
       try {
+        console.log("writing data...");
         fs.writeFileSync('./json-data/game.json', jsonData);
+        console.log("no error.");
       } catch(e) {
         console.log('Error writing json:' + e.message)
       }
