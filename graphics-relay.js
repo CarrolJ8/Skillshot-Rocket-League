@@ -149,9 +149,6 @@ prompt.get([
     console.log('initializing websockets...')
     WsSubscribers.init(r.port || 49322, true);
     WsSubscribers.subscribe("game", "update_state", (data) => {
-      console.log('got some state yooooo')
-      console.log(data)
-      console.log(data[0])
       if (!data) {
         return;
       }
@@ -175,8 +172,9 @@ prompt.get([
         }
       })
 
-      const target = data.players[data.target];
-      data._target = target;
+      const target = data.game.players[data.game.target];
+      console.log(data.game.target);
+      data.game._target = target;
 
       // json stuff
       const jsonData = JSON.stringify([
