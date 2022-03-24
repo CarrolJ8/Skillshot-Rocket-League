@@ -45,12 +45,12 @@ prompt.get([
           let event_event = eventSplit[1];
           if (debug) {
             if (!debugFilters) {
-              console.log(channel, event_event, jEvent);
+              // console.log(channel, event_event, jEvent);
             } else if (
               debugFilters &&
               debugFilters.indexOf(jEvent.event) < 0
             ) {
-              console.log(channel, event_event, jEvent);
+              // console.log(channel, event_event, jEvent);
             }
           }
           WsSubscribers.triggerSubscribers(channel, event_event, jEvent.data);
@@ -146,8 +146,10 @@ prompt.get([
     };
 
   ///acquire team name and current score
-    WsSubscribers.init(49322, true);
+    console.log('initializing websockets...')
+    WsSubscribers.init(r.port || 49322, true);
     WsSubscribers.subscribe("game", "update_state", (data) => {
+      console.log('got some state yooooo')
       if (!data[0]) {
         return;
       }
