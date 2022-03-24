@@ -152,11 +152,11 @@ prompt.get([
       console.log('got some state yooooo')
       console.log(data)
       console.log(data[0])
-      if (!data[0]) {
+      if (!data) {
         return;
       }
 
-      data[0].teams = {
+      data.teams = {
         "team_0": {
           "name": data[0].game.teams[0].name,
           "players": []
@@ -166,7 +166,7 @@ prompt.get([
           "players": []
         }
       }
-      const players = data[0].players;
+      const players = data.players;
       Object.keys( players ).forEach((key) => {
         if (players[key].team === 0) {
           data[0].teams["team_0"].players.push(players[key]);
