@@ -172,7 +172,7 @@ prompt.get([
         }
       })
 
-      const target = data.game.players[data.game.target];
+      const target = data.players[data.game.target];
       console.log(data.game.target);
       data.game._target = target;
 
