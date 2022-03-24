@@ -158,20 +158,20 @@ prompt.get([
 
       data.teams = {
         "team_0": {
-          "name": data[0].game.teams[0].name,
+          "name": data.game.teams[0].name,
           "players": []
         },
         "team_1": {
-          "name": data[0].game.teams[1].name,
+          "name": data.game.teams[1].name,
           "players": []
         }
       }
       const players = data.players;
       Object.keys( players ).forEach((key) => {
         if (players[key].team === 0) {
-          data[0].teams["team_0"].players.push(players[key]);
+          data.teams["team_0"].players.push(players[key]);
         } else {
-          data[0].teams["team_1"].players.push(players[key]);
+          data.teams["team_1"].players.push(players[key]);
         }
       })
 
