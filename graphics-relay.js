@@ -150,6 +150,8 @@ prompt.get([
     WsSubscribers.init(r.port || 49322, true);
     WsSubscribers.subscribe("game", "update_state", (data) => {
       console.log('got some state yooooo')
+      console.log(data)
+      console.log(data[0])
       if (!data[0]) {
         return;
       }
