@@ -175,7 +175,7 @@ prompt.get([
         }
       })
 
-      const target = data.players.find((p) => p.id === data.target);
+      const target = data.players[data.target];
       data._target = target;
 
       // json stuff
